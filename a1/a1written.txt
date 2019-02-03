@@ -1,0 +1,39 @@
+Comp 3010 Assignment 1
+Colin Dyson, 7683407
+
+1. 	Latency: A delay that takes place during communication over a network.
+	Bandwidth: The maximum rate of data transfer across a given path.
+
+	A typical household LAN could expect an average latency of 1ms. Gigabit Ethernet has a bandwidth of 1 000 000 000 bits per second, as evidenced by the name. Thats 125 000 000 bytes per second, or 125 MB/s.
+
+	Latency times of the internet vary greatly depending on where the two communication endpoints are. Systems communicating within North America might expect an average latency of 45 ms, whereas trans-Atlantic communications can sometimes take 90 ms. Bandwidth is much more complicated. Internet Service Providers will sell packages which offer varying bandwidth rates, and these rates can vary drastically dependent on location. My home internet has a bandwidth of roughly 150 MB/s.
+
+	The major difference in latencies between a LAN and WAN should be taken into account when build distributed applications. When designing multiplayer games, for example, the designers must consider the average latency a player for their game might expect. Latency times over the internet could be prohibitavely long if there are no servers near enough to some players and, depending on the nature of the game, this could ruin the experience entirely. Any application requiring a high rate of communication, such as any app supporting interactivity with the server program, must consider these drawbacks. In addition to response times, WAN services are typically made available to many clients at any one time. While a printer in a LAN could reasonably expect fewer than ten print requests at any given time, a service online may be  dealing with thousands of clients at once. As a result, servers used in a WAN should probably be hosted on more powerful machines, or even multiple such machines.
+
+	Compute Time:
+	Assuming the service is performed on a single core:
+	2.2 cycles / instruction * 15,000 instructions 	= 33,000 cycles
+	33,000 cycles / 2.4 * 10 ^ 9 cycles / second 	= 0.00001375 seconds
+													= 13.75 microseconds
+
+	Communication Time:
+	Assuming messages are small enough to fit inside one packet:
+	LAN: 	1 ms to send message to server = 1,000 microseconds
+			So on a LAN, communication time is 2 orders of magnitude greater than compute time.
+
+	WAN:	
+	Assuming endpoints 20,000 km apart, and a latency of roughly 100 ms for this distance:
+			100 ms = 100,000 microseconds
+			On a WAN communicating over a distance of 20,000 km, communication time is 4 orders of magnitude greater than compute time.
+
+	When dividing a problem amonsgt a distrubted system, communication often takes far more time than computation, so care must be had to ensure the problem isn't divided between machines that are too far apart whenever possible. Dividing the labour between multiple machines should account for communication time between those machines, rather than the relative speeds of the connected computers.
+
+	
+
+
+
+
+
+
+
+	
