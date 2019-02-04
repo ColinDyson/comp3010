@@ -16,7 +16,7 @@ public class BankCli {
 
 	// create socket
 	try {
-	    addr = InetAddress.getByName("owl.cs.umanitoba.ca");
+	    addr = InetAddress.getByName("cormorant.cs.umanitoba.ca");
 	    sock = new Socket(addr, 13059); // create client socket
 	} catch (Exception e) {
 	    System.out.println("Creation of client's Socket failed.");
@@ -28,40 +28,40 @@ public class BankCli {
 	try {
 	    instrm = new InputStreamReader(System.in);
 	    stdin = new BufferedReader(instrm);
-	    sockStrm = new DataOutputStream(sock.getOutputStream());
+	    // sockStrm = new DataOutputStream(sock.getOutputStream());
 	} catch (Exception e) {
 	    System.out.println("Socket output stream failed.");
 	    System.exit(1);
 	}
 
 	// read and send integers over the socket until zero is entered
-	String input;
+	boolean exitCmd = false;
+	String input = null;
+	do {
+		try {
+			input = stdin.readLine();
+		} catch (Exception e) {
+			System.out.println("Terminal read failed.");
+			System.exit(1);
+		}
 
-	try {
-		input = stdin.readLine();
-	} catch (Exception e) {
-		System.out.println("Terminal read failed.");
-		System.exit(1);
-	}
-
-	while(!input.equals("E")) {
 		// Input verification
-		if (input.matches("[CR]<\\d+>|[WD]<\\d+,\\d+>")) { 
-			switch(input.charAt(0)) {
-				case 'C': 	create();
-							break;
-				case 'R': 	retrieve();
-							break;
-				case 'D': 	deposit();
-							break;
-				case 'W': 	withdraw();
-							break;
-				default:	break;
+		if (input.matches("[CR]<\\d+>|E|[WD]<\\d+,\\d+>")) { //Input verification
+			if (input.charAt(0) == 'E') {
+				exitCmd = true;
+			} else {
+				try {
+					sockStrm.writeChar(input.charAt(1));
+					//sockStrm.writeInt(Integer.parseInt(input.substring(2, input.length()-1)));
+				} catch (Exception e) {
+					System.out.println("Socket output failed.");
+					System.exit(1);
+				}
 			}
 		} else {
-			System.out.println(input.charAt(0) + " is not a recognized command.");
+			System.out.println(input + " is not a recognized command.");
 		}
-	}
+	} while(!exitCmd);
 
 	// close the streams and  socket
 	try {
@@ -75,21 +75,5 @@ public class BankCli {
 	}
 
 	System.out.println("Client finished.");
-    }
-
-    private void create(int acctNum) {
-
-    }
-
-    private void retrieve(int acctNum) {
-
-    }
-
-    private void deposit(int acctNum, int ammount) {
-
-    }
-
-    private void withdraw(int acctNum, int ammount) {
-    	
     }
 }
