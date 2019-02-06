@@ -6,58 +6,67 @@ public class BankCli {
 
     public static void main(String[] args) {
 
-	Socket sock = null;              // client's socket
-	InetAddress addr = null;         // addr of server (local host for now)
-	DataOutputStream sockStrm = null;// stream used to write to socket
-	InputStreamReader instrm = null; // terminal input stream
-	BufferedReader stdin = null;     // buffered version of instrm
+	Socket sock = null;              		// client's socket
+	InetAddress addr = null;         		// addr of server (local host for now)
+	DataOutputStream outStream = null;		// stream used to write to socket
+	DataInputStream inStream = null;		//stream used to read server response
+	BufferedReader stdin = null;
 
 	System.out.println("Client starting.");
 
-	// create socket
+	// set up terminal input
 	try {
-	    addr = InetAddress.getByName("cormorant.cs.umanitoba.ca");
-	    sock = new Socket(addr, 13059); // create client socket
+	    stdin = new BufferedReader(new InputStreamReader(System.in));  
 	} catch (Exception e) {
-	    System.out.println("Creation of client's Socket failed.");
-	    System.exit(1);
-	}
-
-	// set up terminal input and socket output streams
-	
-	try {
-	    instrm = new InputStreamReader(System.in);
-	    stdin = new BufferedReader(instrm);
-	    // sockStrm = new DataOutputStream(sock.getOutputStream());
-	} catch (Exception e) {
-	    System.out.println("Socket output stream failed.");
+	    System.out.println("Failed to create terminal reader.");
 	    System.exit(1);
 	}
 
 	// read and send integers over the socket until zero is entered
 	boolean exitCmd = false;
 	String input = null;
+	String response = null;
 	do {
 		try {
 			input = stdin.readLine();
 		} catch (Exception e) {
-			System.out.println("Terminal read failed.");
+			System.out.println("Failed to read from terminal.");
 			System.exit(1);
 		}
 
 		// Input verification
-		if (input.matches("[CR]<\\d+>|E|[WD]<\\d+,\\d+>")) { //Input verification
-			if (input.charAt(0) == 'E') {
-				exitCmd = true;
-			} else {
-				try {
-					sockStrm.writeChar(input.charAt(1));
-					//sockStrm.writeInt(Integer.parseInt(input.substring(2, input.length()-1)));
-				} catch (Exception e) {
-					System.out.println("Socket output failed.");
-					System.exit(1);
-				}
+		if (input.matches("[CR]<\\d+>|[WD]<\\d+,\\d+>")) {
+			//Connect to server
+			try {
+			    addr = InetAddress.getByName("cormorant.cs.umanitoba.ca");
+			    sock = new Socket(addr, 13059);
+			    outStream = new DataOutputStream(sock.getOutputStream());
+		    	inStream = new DataInputStream(sock.getInputStream());
+			} catch (Exception e) {
+			    System.out.println("Failed to create socket.");
+			    System.exit(1);
+			}	
+
+			try {
+				outStream.writeUTF(input);
+				response = inStream.readUTF();
+				System.out.println("[Server]: " + response);
+			} catch (Exception e) {
+				System.out.println("Communication with the server has failed.");
+				System.exit(1);
 			}
+
+			//Disconnect from server
+			try {
+				outStream.close();
+				inStream.close();
+				sock.close();
+			} catch (Exception e) {
+				System.out.println("Failed to close socket.");
+				System.exit(1);
+			}
+		} else if (input.matches("E")) {
+			exitCmd = true;
 		} else {
 			System.out.println(input + " is not a recognized command.");
 		}
@@ -65,12 +74,9 @@ public class BankCli {
 
 	// close the streams and  socket
 	try {
-		instrm.close();
 	    stdin.close();
-	    sockStrm.close();
-	    sock.close();
 	} catch (Exception e) {
-	    System.out.println("Client couldn't close socket.");
+	    System.out.println("Client couldn't close terminal reader.");
 	    System.exit(1);
 	}
 
