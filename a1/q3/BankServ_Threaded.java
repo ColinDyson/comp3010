@@ -1,24 +1,32 @@
+//Created by:	Colin Dyson
+//Student #:	7683407
+
 import java.util.Hashtable;
 import java.util.regex.*;
 import java.net.*;
 import java.io.*;
 
+public class BankServ_Threaded implements Runnable {
 
-public class BankServ {
+	Socket cliSock = null;  // socket for each client
+							// *** This is instantiated per client whenever
+							// a new Thread is created
+	static Hashtable<Integer, Integer> accounts;
+
+    BankServ_Threaded(Socket csocket) {	// constructor called by server for each client
+		this.cliSock = csocket;
+    }
 
     public static void main(String[] args) {
 
 		ServerSocket sock = null;    		// server's master socket
 		InetAddress addr = null;     		// address of server
-		Socket cliSock = null;       		// socket to the client
-		DataInputStream inStream = null; 	// stream used to read from socket
-		DataOutputStream outStream = null;	// stream used to write to socket
-		Hashtable<Integer, Integer> accounts = new Hashtable<Integer, Integer>();
-		String status = null;				// Status string to return to client
+		Socket cli = null;					// socket returned from accept
+		accounts = new Hashtable<Integer, Integer>();
 
 		System.out.println("Server starting.");
 
-		// Create Socket
+		// Create master Socket
 		try {
 		    addr = InetAddress.getLocalHost();
 		    sock = new ServerSocket(13059,3,addr);
@@ -30,53 +38,61 @@ public class BankServ {
 		while(true) {
 		// Accept a connection (can only be force quit for now)
 			try {
-			    cliSock = sock.accept();
+			    cli = sock.accept();
 			} catch (Exception e) {
 			    System.out.println("Accept failed.");
 			    System.exit(1);
 			}
 
-			try {
-			    inStream = new DataInputStream(cliSock.getInputStream());
-			    outStream = new DataOutputStream(cliSock.getOutputStream());
-			} catch (Exception e) {
-			    System.out.println("Couldn't create socket i/o streams.");
-			    System.exit(1);
-			}
-			try {
-				String message = inStream.readUTF();
-				switch (message.charAt(0)) {
-					case 'C':	status = create(accounts, Integer.parseInt(message.substring(message.indexOf('<') + 1, message.indexOf('>'))));
-								break;
-					case 'R':	status = retrieve(accounts, Integer.parseInt(message.substring(message.indexOf('<') + 1, message.indexOf('>'))));
-								break;
-					case 'W':	status = withdraw(accounts, Integer.parseInt(message.substring(message.indexOf('<') + 1, message.indexOf(','))),
-															Integer.parseInt(message.substring(message.indexOf(',') + 1, message.indexOf('>'))));
-								break;
-					case 'D':	status = deposit(accounts, 	Integer.parseInt(message.substring(message.indexOf('<') + 1, message.indexOf(','))),
-															Integer.parseInt(message.substring(message.indexOf(',') + 1, message.indexOf('>'))));
-								break;
-					default:	break;
-				}
-				outStream.writeUTF(status);
-			} catch (Exception e) {
-				System.out.println("Socket i/o failed." + e);
-				System.exit(1);
-			}
-
-			//close the stream and sockets
-			try {
-		    	inStream.close();
-		    	outStream.close();
-		    	cliSock.close();
-			} catch (Exception e) {
-		    	System.out.println("Server couldn't close a socket.");
-		    	System.exit(1);
-			}
+			new Thread(new BankServ_Threaded(cli)).start();	//Start a new thread for each client we accept
 		}
-    }
+	}
 
-    static String create(Hashtable<Integer, Integer> accounts, int acctNumber) {
+	public void run() {
+		DataInputStream inStream = null; 	// stream used to read from socket
+		DataOutputStream outStream = null;	// stream used to write to socket
+		String status = null;				// Status string to return to client
+
+		try {
+		    inStream = new DataInputStream(cliSock.getInputStream());
+		    outStream = new DataOutputStream(cliSock.getOutputStream());
+		} catch (Exception e) {
+		    System.out.println("Couldn't create socket i/o streams.");
+		    System.exit(1);
+		}
+		try {
+			String message = inStream.readUTF();
+			switch (message.charAt(0)) {
+				case 'C':	status = create(	Integer.parseInt(message.substring(message.indexOf('<') + 1, message.indexOf('>'))));
+							break;
+				case 'R':	status = retrieve(	Integer.parseInt(message.substring(message.indexOf('<') + 1, message.indexOf('>'))));
+							break;
+				case 'W':	status = withdraw(	Integer.parseInt(message.substring(message.indexOf('<') + 1, message.indexOf(','))),
+												Integer.parseInt(message.substring(message.indexOf(',') + 1, message.indexOf('>'))));
+							break;
+				case 'D':	status = deposit(	Integer.parseInt(message.substring(message.indexOf('<') + 1, message.indexOf(','))),
+												Integer.parseInt(message.substring(message.indexOf(',') + 1, message.indexOf('>'))));
+							break;
+				default:	break;
+			}
+			outStream.writeUTF(status);
+		} catch (Exception e) {
+			System.out.println("Socket i/o failed." + e);
+			System.exit(1);
+		}
+
+		//close the stream and sockets
+		try {
+	    	inStream.close();
+	    	outStream.close();
+	    	cliSock.close();
+		} catch (Exception e) {
+	    	System.out.println("Server couldn't close a socket.");
+	    	System.exit(1);
+		}
+	}
+
+    static synchronized String create(int acctNumber) {
     	String status = null;
     	System.out.println("Creating accout " + acctNumber);
     	if (!accounts.containsKey(acctNumber)) {
@@ -89,7 +105,7 @@ public class BankServ {
     	return status;
     }
 
-    static String retrieve(Hashtable<Integer, Integer> accounts, int acctNumber) {
+    static synchronized String retrieve(int acctNumber) {
     	String status = null;
     	System.out.println("Retrieving account " + acctNumber);
     	Integer balance = accounts.get(acctNumber);
@@ -103,7 +119,7 @@ public class BankServ {
     	return status;
     }
 
-    static String deposit(Hashtable<Integer, Integer> accounts, int acctNumber, int ammount) {
+    static synchronized String deposit(int acctNumber, int ammount) {
     	String status = null;
     	System.out.println("Depositing $" + ammount + " into Account #" + acctNumber);
 
@@ -118,7 +134,7 @@ public class BankServ {
     	return status;
     }
 
-    static String withdraw(Hashtable<Integer, Integer> accounts, int acctNumber, int ammount) {
+    static synchronized String withdraw(int acctNumber, int ammount) {
     	String status = null;
     	System.out.println("Withdrawing $" + ammount + " from Account #" + acctNumber);
 
