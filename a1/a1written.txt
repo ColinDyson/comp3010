@@ -4,11 +4,21 @@ Colin Dyson, 7683407
 1. 	Latency: A delay that takes place during communication over a network.
 	Bandwidth: The maximum rate of data transfer across a given path.
 
-	A typical household LAN could expect an average latency of 1ms. Gigabit Ethernet has a bandwidth of 1 000 000 000 bits per second, as evidenced by the name. Thats 125 000 000 bytes per second, or 125 MB/s.
+	A typical household LAN could expect an average latency of 1ms. Gigabit Ethernet has a bandwidth of 1 000 000 000 bits per second, 
+	as evidenced by the name. Thats 125 000 000 bytes per second, or 125 MB/s.
 
-	Latency times of the internet vary greatly depending on where the two communication endpoints are. Systems communicating within North America might expect an average latency of 45 ms, whereas trans-Atlantic communications can sometimes take 90 ms. Bandwidth is much more complicated. Internet Service Providers will sell packages which offer varying bandwidth rates, and these rates can vary drastically dependent on location. My home internet has a bandwidth of roughly 150 MB/s.
+	Latency times of the internet vary greatly depending on where the two communication endpoints are. Systems communicating within North America 
+	might expect an average latency of 45 ms, whereas trans-Atlantic communications can sometimes take 90 ms. Bandwidth is much more complicated. Internet 
+	Service Providers will sell packages which offer varying bandwidth rates, and these rates can vary drastically dependent on location. My home internet 
+	has a bandwidth of roughly 150 MB/s.
 
-	The major difference in latencies between a LAN and WAN should be taken into account when build distributed applications. When designing multiplayer games, for example, the designers must consider the average latency a player for their game might expect. Latency times over the internet could be prohibitavely long if there are no servers near enough to some players and, depending on the nature of the game, this could ruin the experience entirely. Any application requiring a high rate of communication, such as any app supporting interactivity with the server program, must consider these drawbacks. In addition to response times, WAN services are typically made available to many clients at any one time. While a printer in a LAN could reasonably expect fewer than ten print requests at any given time, a service online may be  dealing with thousands of clients at once. As a result, servers used in a WAN should probably be hosted on more powerful machines, or even multiple such machines.
+	The major difference in latencies between a LAN and WAN should be taken into account when build distributed applications. When designing multiplayer 
+	games, for example, the designers must consider the average latency a player for their game might expect. Latency times over the internet could be 
+	prohibitavely long if there are no servers near enough to some players and, depending on the nature of the game, this could ruin the experience 
+	entirely. Any application requiring a high rate of communication, such as any app supporting interactivity with the server program, must consider 
+	these drawbacks. In addition to response times, WAN services are typically made available to many clients at any one time. While a printer in a LAN 
+	could reasonably expect fewer than ten print requests at any given time, a service online may be  dealing with thousands of clients at once. As a 
+	result, servers used in a WAN should probably be hosted on more powerful machines, or even multiple such machines.
 
 	Compute Time:
 	Assuming the service is performed on a single core:
@@ -26,7 +36,29 @@ Colin Dyson, 7683407
 			100 ms = 100,000 microseconds
 			On a WAN communicating over a distance of 20,000 km, communication time is 4 orders of magnitude greater than compute time.
 
-	When dividing a problem amonsgt a distrubted system, communication often takes far more time than computation, so care must be had to ensure the problem isn't divided between machines that are too far apart whenever possible. Dividing the labour between multiple machines should account for communication time between those machines, rather than the relative speeds of the connected computers.
+	When dividing a problem amonsgt a distrubted system, communication often takes far more time than computation, so care must be had to ensure the 
+	problem isn't divided between machines that are too far apart whenever possible. Dividing the labour between multiple machines should account for 
+	communication time between those machines, rather than the relative speeds of the connected computers.
+
+5.	In the datagram-based implementation of our bank server/client, there is no guaruntee that the packets will reach their destination. As a result, 
+	the packet could be lost and the program would eventually timeout. Our connection-based implementation will not encounter that problem. 
+	Failure will occur with the connection-based implementation if the server machine were to encounter an unexpected shutdown, or our server process 
+	were to otherwise close unexpectedly. The server was arbitrarily chosen and hard-coded to reside on the machine cormorant. If for some 
+	reason cormorant is not running, neither will these programs. Our threadless client will encounter an error and exit if it attempts to connect 
+	to the server while another client is currently connected. Our threaded variants of the servers solve this problem by creating a new thread 
+	for each client. If for some reason the number of clients requesting service at once was too great, our server may run out of usable memory. 
+	The socket for the server has a backlog of 3. This means that until the buffer is cleared, only 3 connection requests may be waiting at a given 
+	time before further clients will experience connection failure.
+
+6.	If we wanted to multiply large matrices, using distributed systems could speed operation up a great deal. In a simplified version, for any pair
+	of N X N matrices, we could split the vector dot products between machines. For example, machine 0 would calculate row 0 dot column 0. Machine
+	1 would calculate row 0 dot column 1, machine N + 1 would calculate row 1 dot column 0, and so on. With this model, each machine is responsible
+	for calculating an entry in the resulting matrix by itself, and so we won't run into any synchronization issues. We could further split the 
+	problem up, but doing so will introduce possible synch issues. In an extreme example, we could split the work up of calculating the vector dot
+	products themselves. Process 0 would calculate [0,0] of the first matrix times [0,0] of the second. Afterwards, each process will update it's
+	assigned entry in the resulting matrix by adding it's result to the current value. Issues will arise if multiple processes update that value at
+	the same time. If this happens, it could be possible that the results of their addition would exclude the others contribution, and so the
+	dot products may end up being less than the correct result. Steps must be taken to ensure proper synchronization if we want to avoid these errors.
 
 	
 
