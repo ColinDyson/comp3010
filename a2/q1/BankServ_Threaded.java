@@ -49,19 +49,19 @@ public class BankServ_Threaded implements Runnable {
 	}
 
 	public void run() {
-		DataInputStream inStream = null; 	// stream used to read from socket
-		DataOutputStream outStream = null;	// stream used to write to socket
+		BufferedReader inStream = null; 	// stream used to read from socket
+		PrintWriter outStream = null;	// stream used to write to socket
 		String status = null;				// Status string to return to client
 
 		try {
-		    inStream = new DataInputStream(cliSock.getInputStream());
-		    outStream = new DataOutputStream(cliSock.getOutputStream());
+		    inStream = new BufferedReader(new InputStreamReader(cliSock.getInputStream()));
+		    outStream = new PrintWriter(cliSock.getOutputStream(),true);
 		} catch (Exception e) {
 		    System.out.println("Couldn't create socket i/o streams.");
 		    System.exit(1);
 		}
 		try {
-			String message = inStream.readUTF();
+			String message = inStream.readLine();
 			// Input verification
 			if (message.matches("[CR]<\\d+>|[WD]<\\d+,\\d+>")) {
 				switch (message.charAt(0)) {
@@ -78,11 +78,11 @@ public class BankServ_Threaded implements Runnable {
 					default:	break;
 				}
 			} else {
-				status = new String(message + "is not a recognized command.");
+				status = new String("\'" + message + "\' is not a recognized command.");
 			}
-			outStream.writeUTF(status);
+			outStream.println(status);
 		} catch (Exception e) {
-			System.out.println("Socket i/o failed." + e);
+			System.out.println("Socket i/o failed.");
 			System.exit(1);
 		}
 
