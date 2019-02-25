@@ -1,0 +1,4 @@
+CREATE TABLE dysonc_BANKACCTS (
+	acctnum 	INTEGER NOT NULL,
+	acctbalance INTEGER NOT NULL
+);
