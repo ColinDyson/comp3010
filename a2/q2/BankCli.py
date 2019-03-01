@@ -5,7 +5,7 @@ import sys
 import socket
 
 sock = ''
-host = "cormorant.cs.umanitoba.ca"
+host = "www3.cs.umanitoba.ca"
 port = 13059
 
 print("Client starting")
