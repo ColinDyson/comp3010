@@ -42,7 +42,7 @@ public class BankCli_RMI {
 			}
 
 			// Input verification
-			if (input.matches("[CR]<\\d+>|[WD]<\\d+,\\d+>")) {
+			if (input.matches("S|[CR]<\\d+>|[WD]<\\d+,\\d+>")) {
 				try {
 					response = bank.request(input);
 					System.out.println("[Server]: " + response);

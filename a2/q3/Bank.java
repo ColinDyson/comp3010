@@ -2,6 +2,9 @@ import java.rmi.*;
 import java.rmi.server.*;
 import java.util.Hashtable;
 import java.util.regex.*;
+import java.util.Map;
+import java.util.Set;
+import java.util.Iterator;
 
 public class Bank extends UnicastRemoteObject implements BankIface {
 	static Hashtable<Integer, Integer> accounts = new Hashtable<Integer, Integer>();
@@ -11,7 +14,7 @@ public class Bank extends UnicastRemoteObject implements BankIface {
 
 	public String request(String input) throws RemoteException {
 		String status = null;
-		if (input.matches("[CR]<\\d+>|[WD]<\\d+,\\d+>")) {
+		if (input.matches("S|[CR]<\\d+>|[WD]<\\d+,\\d+>")) {
 			switch (input.charAt(0)) {
 				case 'C':	status = create(	Integer.parseInt(input.substring(input.indexOf('<') + 1, input.indexOf('>'))));
 							break;
@@ -23,6 +26,7 @@ public class Bank extends UnicastRemoteObject implements BankIface {
 				case 'D':	status = deposit(	Integer.parseInt(input.substring(input.indexOf('<') + 1, input.indexOf(','))),
 												Integer.parseInt(input.substring(input.indexOf(',') + 1, input.indexOf('>'))));
 							break;
+                case 'S':   status = summary();
 				default:	break;
 			}
 		}
@@ -92,5 +96,19 @@ public class Bank extends UnicastRemoteObject implements BankIface {
     	}
 
     	return status;
+    }
+
+    static synchronized String summary() {
+        String status = "";
+        System.out.println("Retrieving Accounts Summary.");
+
+        Set set = accounts.entrySet();
+        Iterator it = set.iterator();
+        while (it.hasNext()) {
+            Map.Entry entry = (Map.Entry)it.next();
+            status += (entry.getKey() + " : " + entry.getValue() + "\n");
+        }
+
+        return status;
     }
 }
