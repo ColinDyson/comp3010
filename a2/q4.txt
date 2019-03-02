@@ -1,0 +1,37 @@
+Created by:	Colin Dyson
+Student #:	7683407
+
+1. A ClassLoader is responsible for loading classes given their 
+binary name (e.g java.lang.String). The loader will by default 
+search for the given class within the local file system. The 
+location which a class loader will look can be defined by setting 
+the environment variable CLASSPATH. When found, it creates and 
+returns an instance object of the requested class. Some of these 
+objects may reference further classes, and so the virtual machine 
+will invoke the loadClass method in order to load any other 
+dependencies in a similar manner. Sometimes classes may originate 
+from a network location rather than the local file system. Class 
+loader is an abstract class, so a network class loader would have to 
+be implemented. This loader must define the methods findClass and 
+loadClassData. The latter method could take the binary name of the 
+class and open a socket connection to the server on which the class 
+is hosted. It will recieve the class definition encoded as an array 
+of bytes and close the connection. After loading the definition, 
+findClass must return an instance of that class, which may be 
+constructed given a byte array representation of the class 
+definition by calling defineClass. If further instances of this 
+class are requested, Class.newInstance may be used rather than 
+redownloading the definition from the server. The Classloader tool 
+is incredibly powerful as it allows distributed applications to make 
+use of classes that are not typically located on a client machine. 
+For systems with many users, this can greatly simplify the setup 
+process to run the application, as those classes are no longer 
+required to be downloaded and included in the CLASSPATH by the user. 
+Additionally, each user needs less storage space for that 
+application. One downside of using network based class loaders is 
+reduced reliability. Without a local copy of the class, the 
+application will not have full functionality if the network is 
+interupted. Additional steps must also be taken to ensure security, 
+as the network communication may easily be eavesdropped, and an 
+adversary with knowledge of which classes are being loaded from the 
+server may result in easier future attacks.

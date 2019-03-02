@@ -1,3 +1,6 @@
+//Created by:   Colin Dyson
+//Student #:    7683407
+
 import java.rmi.*;
 import java.rmi.server.*;
 import java.util.Hashtable;
@@ -26,7 +29,7 @@ public class Bank extends UnicastRemoteObject implements BankIface {
 				case 'D':	status = deposit(	Integer.parseInt(input.substring(input.indexOf('<') + 1, input.indexOf(','))),
 												Integer.parseInt(input.substring(input.indexOf(',') + 1, input.indexOf('>'))));
 							break;
-                case 'S':   status = summary();
+                case 'S':   status = accountSummary();
 				default:	break;
 			}
 		}
@@ -98,15 +101,16 @@ public class Bank extends UnicastRemoteObject implements BankIface {
     	return status;
     }
 
-    static synchronized String summary() {
+    static synchronized String accountSummary() {
         String status = "";
         System.out.println("Retrieving Accounts Summary.");
 
         Set set = accounts.entrySet();
         Iterator it = set.iterator();
+        status += "\nAccount #\tAccount Balance";
         while (it.hasNext()) {
             Map.Entry entry = (Map.Entry)it.next();
-            status += (entry.getKey() + " : " + entry.getValue() + "\n");
+            status += ("\n" + entry.getKey() + "\t\t" + entry.getValue());
         }
 
         return status;
