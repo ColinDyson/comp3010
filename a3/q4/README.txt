@@ -1,6 +1,17 @@
 Created by 		Colin Dyson
 Student Number	7683407
 
+Files
+ - bank.html
+ - acct_creation.html
+ - acct_deposit.html
+ - acct_retrieval.html
+ - acct_withdrawal.html
+ - create_acct.php
+ - deposit_acct.php
+ - retrieve_acct.php
+ - withdraw_acct.php
+
 Setup
  - N/A
 
