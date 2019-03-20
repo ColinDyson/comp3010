@@ -1,0 +1,59 @@
+<!--Created by:	Colin Dyson
+Student #:	7683407-->
+<!doctype html>
+<html>
+    <head>
+        <title>Testing HTML Page</title>
+    </head>
+    <body>
+    	<h1>Heading 1</h1>
+    	<h3>Heading 3</h3>
+    	<hr>
+        <button>Button</button>
+        <div>
+            <p>Paragraph within div</p>
+            <h5>Heading 5 within paragraph</h5>
+            <ul>
+                <li><p>Paragraph as list item</p></li>
+                <li><button>Button as list item</button></li>
+                <li><p>Paragraph<button></button>with button</p></li>
+            </ul>
+        </div>
+
+    </body>
+</html>
+<script>
+    var leftopenbrace = "< ";
+    var rightbrace = " >";
+    var leftclosebrace = "< / ";
+    var firstNode = document.documentElement;
+
+    var printNode = function(node, depth) {
+        var line = leftopenbrace.concat(node, rightbrace);
+        document.write(depth + " ");
+        document.write(line);
+        document.write("<br>");
+    };
+
+    var closeNode = function(node, depth) {
+        var line = leftclosebrace.concat(node, rightbrace);
+        document.write(depth + " ");
+        document.write(line);
+        document.write("<br>");
+    };
+
+    var walkDOM = function(node, depth) {
+        printNode(node.nodeName, depth);
+        node = node.firstElementChild;
+        depth++;
+
+        while(node && node.nodeName != "BR") {
+            walkDOM(node, depth);
+            closeNode(node.nodeName, depth);
+            node = node.nextElementSibling;
+        }
+    };
+
+    walkDOM(firstNode, 1);
+    document.write("1 < / HTML >");
+</script>
